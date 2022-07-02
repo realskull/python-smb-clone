@@ -1,0 +1,27 @@
+Level editor for helpv1 framework games [SUPERMARIO] in this case.
+
+Simply open leveleditor.py and run it. REMEMBER PYGAME IS STILL REQUIRED.
+
+Use Arrow keys to move cursor
+Use A and D to switch the objects.
+Use W and S to switch types of objects.
+Use X to place an object and Z to remove it.
+Use 0 to go to next level.
+
+THE CHANGES YOU MAKE ARE APPLIED REALTIME! SO IT IS SAVED AFTER EVERY BLOCK YOU PLACE!!
+REMEMBER ALWAYS MAKE BACKUPS OF YOUR LEVEL! THE GAME CAN OVERWRITE THE LEVELS.
+
+Every level is 14blocks in height and upto 500blocks long. (CAN BE MADE LONGER)
+Sorry, only horizontal scrolling as it is a mario game.
+
+To use the level simply play the mario game.
+
+CHEATS!
+
+1 - become small
+2 - become big
+3 - become fire 
+4 - become bomber
+0 - goto next level
+
+To play levels simpl

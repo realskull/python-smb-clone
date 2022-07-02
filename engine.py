@@ -85,6 +85,15 @@ mushroom_img.set_colorkey((255,255,255))
 flower_img = pygame.image.load('tiles/objects/flower/fpop/fpop_0.png').convert()
 flower_img.set_colorkey((255,255,255))
 
+bomber_img = pygame.image.load('tiles/objects/bomber/bomber_pop/bomber_pop_0.png').convert()
+bomber_img.set_colorkey((255,255,255))
+
+bomb_img = pygame.image.load('tiles/objects/bomb/bomb_0.png').convert()
+bomb_img.set_colorkey((255,255,255))
+
+explosion_img = pygame.image.load('tiles/objects/explosion/explosion_0.png').convert()
+explosion_img.set_colorkey((255,255,255))
+
 fireball_img = pygame.image.load('tiles/objects/fireball/fireball_0.png').convert()
 fireball_img.set_colorkey((255,255,255))
 
@@ -182,7 +191,8 @@ coins = 0
 player_flash = False
 beingsmall = False
 beingbig = False
-beinggod = False
+beingbomber = False
+beingfire = False
 moving_left = False
 moving_right = False
 isFreeFalling = False
@@ -211,6 +221,8 @@ mushroom_blocks = []
 mushrooms = []
 flowers = []
 fireballs = []
+bombers = []
+bombs = []
 bricks = []
 goombas = []
 goombas_kill = []
@@ -221,6 +233,7 @@ broken_bricks = []
 Labels = []
 labels_kill = []
 coin_bounces = []
+explosions = []
 path = 'map'
 
 
@@ -317,6 +330,14 @@ def move(rect,movement,tiles): # return dict for possible movement directions
 animation_database = {} # animation database dict
 
 #Load player's animations
+animation_database['bomberidle'] = load_animation('player_animations/bomber/bomberidle',[7])
+animation_database['bomberrun'] = load_animation('player_animations/bomber/bomberrun',[7,7,7])
+animation_database['bomberjump'] = load_animation('player_animations/bomber/bomberjump',[7])
+animation_database['bomberdie'] = load_animation('player_animations/bomber/bomberdie',[7])
+
+animation_database['firetobomber'] = load_animation('player_animations/bomber/firetobomber',[22,22])
+animation_database['bombertofire'] = load_animation('player_animations/bomber/bombertofire',[22,22])
+
 animation_database['fireidle'] = load_animation('player_animations/fire/fireidle',[7])
 animation_database['firerun'] = load_animation('player_animations/fire/firerun',[7,7,7])
 animation_database['firejump'] = load_animation('player_animations/fire/firejump',[7])
@@ -355,6 +376,10 @@ animation_database['pop'] = load_animation('tiles/objects/mushroom/pop',[7,7,7,7
 animation_database['mushroom'] = load_animation('tiles/objects/mushroom',[7])
 animation_database['flower'] = load_animation('tiles/objects/flower/flower',[7,7,7,7])
 animation_database['fpop'] = load_animation('tiles/objects/flower/fpop',[7,7,7,7,7])
+animation_database['bomber_pop'] = load_animation('tiles/objects/bomber/bomber_pop',[7,7,7,7])
+animation_database['bomber'] = load_animation('tiles/objects/bomber/bomber',[7,7,7,7])
+animation_database['bomb'] = load_animation('tiles/objects/bomb',[7,7,7,7])
+animation_database['explosion'] = load_animation('tiles/objects/explosion',[2,2,3,3,4,4,4,4])
 
 global player_action
 global player_frame
@@ -508,6 +533,63 @@ class Flower():
         self.img_id = animation_database[flower_action][self.frame]
         self.img = animation_frames[self.img_id]
         self.frame += 1
+
+class Bomber():
+    def __init__(self, loc):
+        self.loc = [loc[0],loc[1]-16]
+        self.img_id = 0
+        self.img = bomber_img
+        self.frame = 0
+        self.justcreated = True
+        self.isAlive = True     
+        self.rect = self.get_rect()
+
+    def render(self, surf):
+        surf.blit(self.img, (self.loc[0] - scroll[0], self.loc[1] - scroll[1]))
+
+    def get_rect(self):
+        return pygame.Rect(self.loc[0], self.loc[1], 16, 16)
+    
+    def collision_test(self, rect):
+        bomber_rect = self.get_rect()
+        return bomber_rect.colliderect(rect)
+    
+    def animate(self, bomber_action):        
+        if self.frame >= len(animation_database[bomber_action]):
+            self.frame = 0
+            self.justcreated = False
+        self.img_id = animation_database[bomber_action][self.frame]
+        self.img = animation_frames[self.img_id]
+        self.frame += 1
+        
+class Explosion():
+    def __init__(self, loc):
+        self.loc = loc
+        self.img_id = 0
+        self.img = explosion_img
+        self.frame = 0
+        self.justcreated = True
+        self.isAlive = True     
+        self.rect = self.get_rect()
+
+    def render(self, surf):
+        surf.blit(self.img, (self.loc[0] - scroll[0], self.loc[1] - scroll[1]))
+
+    def get_rect(self):
+        return pygame.Rect(self.loc[0], self.loc[1], 16, 16)
+    
+    def collision_test(self, rect):
+        Explosion_rect = self.get_rect()
+        return Explosion_rect.colliderect(rect)
+    
+    def animate(self, Explosion_action):        
+        if self.frame >= len(animation_database[Explosion_action]):
+            self.frame = 0
+            self.justcreated = False
+        self.img_id = animation_database[Explosion_action][self.frame]
+        self.img = animation_frames[self.img_id]
+        self.frame += 1
+        
 
 class Mushroom_block():
     def __init__(self, loc):
@@ -785,6 +867,53 @@ class Fireball():
         if self.frame >= len(animation_database[fireball_action]):
             self.frame = 0
         self.img_id = animation_database[fireball_action][self.frame]
+        self.img = animation_frames[self.img_id]
+
+class Bomb():
+    def __init__(self, loc , direction):
+        self.loc = loc
+        self.direction = direction
+        self.vertical_momentum = -2
+        self.movement = [0,0]
+        self.img_id = 0
+        self.img = bomb_img
+        self.frame = 0
+        self.isAlive = True
+        self.bounces = 0
+        self.movementSpeed = 3
+        self.collision_types = {'top':False,'bottom':False,'right':False,'left':False}
+        self.rect = self.get_rect()
+
+
+    def render(self, surf):
+        self.loc[0] = self.rect.x
+        self.loc[1] = self.rect.y
+        surf.blit(self.img, (self.loc[0] - scroll[0], self.loc[1] - scroll[1]))
+
+    def get_rect(self):
+        return pygame.Rect(self.loc[0], self.loc[1], 8, 8)
+
+    def collision_test(self, rect):
+        bomb_rect = self.get_rect()
+        return bomb_rect.colliderect(rect)
+    
+    def move(self):
+        self.movement = [0,0]
+        if self.direction == 'left' and self.isAlive:
+            self.movement[0] -= self.movementSpeed
+        if self.direction == 'right' and self.isAlive:
+            self.movement[0] += self.movementSpeed
+        self.movement[1] += self.vertical_momentum
+        
+        self.vertical_momentum += 0.2
+        if self.vertical_momentum > 3:
+            self.vertical_momentum = 3
+            
+    def animate(self, bomb_action):
+        self.frame += 1
+        if self.frame >= len(animation_database[bomb_action]):
+            self.frame = 0
+        self.img_id = animation_database[bomb_action][self.frame]
         self.img = animation_frames[self.img_id]
     
 
@@ -1114,6 +1243,35 @@ while not IsGameOver or True: # Main game loop
         elif player_movement[0] < 0:
             player_flip = True
             player_action,player_frame = change_action(player_action,player_frame,'firerun')
+    
+    elif player_size == 'bomber':
+        
+        if IsGameOver:
+            player_action,player_frame = change_action(player_action,player_frame,'bomberdie')       
+            
+        elif beingbomber:
+            vertical_momentum = 0
+            player_rect.y = freeze_y
+            player_action,player_frame = change_action(player_action,player_frame,'firetobomber')
+            if not player_flash:
+                player_flash = True
+            else:
+                player_flash = False
+                isinvincible = False
+                        
+        elif isFreeFalling == True:
+            player_action,player_frame = change_action(player_action,player_frame,'bomberjump')
+
+        elif player_movement[0] == 0:
+            player_action,player_frame = change_action(player_action,player_frame,'bomberidle')
+
+        elif player_movement[0] > 0:
+            player_flip = False
+            player_action,player_frame = change_action(player_action,player_frame,'bomberrun')
+
+        elif player_movement[0] < 0:
+            player_flip = True
+            player_action,player_frame = change_action(player_action,player_frame,'bomberrun')
                
     player_rect,collisions = move(player_rect,player_movement,tile_rects) #Check player collision
     
@@ -1135,6 +1293,7 @@ while not IsGameOver or True: # Main game loop
         beingsmall = False
         beingbig = False
         beingfire = False
+        beingbomber = False
 
     player_img_id = animation_database[player_action][player_frame]
     player_img = animation_frames[player_img_id]
@@ -1151,7 +1310,15 @@ while not IsGameOver or True: # Main game loop
     coin_img_id = animation_database[coin_action][coin_frame]
     coin_img = animation_frames[coin_img_id]
      
-     
+    
+    for explosion in explosions:
+        if explosion.justcreated:
+            explosion.render(display)
+            explosion.animate('explosion')
+        
+        
+        
+    
     for brick in bricks:
         if brick.isbumping:
             brick.bump()
@@ -1178,7 +1345,7 @@ while not IsGameOver or True: # Main game loop
                 vertical_momentum -= 0.2
                 air_timer = 0
             if brick.loc[1] < player_rect.y and not IsGameOver:
-                if player_size in ['big','fire']:
+                if player_size in ['big','fire','bomber']:
                     broken_bricks.append(brick.get_small_rect())
                     brick.action,brick.frame = change_action(brick.action,brick.frame,'brick')
                     brick_break_sound.set_volume(1)
@@ -1255,11 +1422,14 @@ while not IsGameOver or True: # Main game loop
                 empty_what_blocks.append(Empty_what_block(mushroomblock.loc))           
                 mushrooms.append(Mushroom(mushroomblock.loc))
                 mushroom_blocks.remove(mushroomblock)
-            if player_size in ['big','fire']:
+            if player_size in ['big']:
                 empty_what_blocks.append(Empty_what_block(mushroomblock.loc))           
                 flowers.append(Flower(mushroomblock.loc))
                 mushroom_blocks.remove(mushroomblock)
-
+            if player_size in ['fire','bomber']:
+                empty_what_blocks.append(Empty_what_block(mushroomblock.loc))           
+                bombers.append(Bomber(mushroomblock.loc))
+                mushroom_blocks.remove(mushroomblock)
         
         mushroomblock_action = 'what'
         mushroomblock_action,mushroomblock.frame = change_action(mushroomblock_action,mushroomblock.frame,'what')
@@ -1278,7 +1448,41 @@ while not IsGameOver or True: # Main game loop
                 powerup_appear.play()
                 vertical_momentum -= 3
                 
-    
+    for bomber in bombers:
+        bomber.render(display) 
+        if bomber.justcreated:
+            bomber.animate('bomber_pop')
+        else:
+            bomber.animate('bomber')
+            
+        if bomber.collision_test(player_rect) and bomber.isAlive and not IsGameOver:
+            if player_size == 'small':
+                score += 200
+                beingbig = True
+                player_rect = pygame.rect.Rect(player_rect.x,player_rect.y,16,32)
+                powerup.play()
+                player_size = 'big'
+                freeze_y = player_rect.y - 16
+                bombers.remove(bomber)
+            elif player_size == 'big':
+                beingfire = True
+                score += 200
+                powerup.play()
+                player_size = 'fire'
+                freeze_y = player_rect.y - 16
+                bombers.remove(bomber)
+            elif player_size == 'fire':
+                beingbomber = True
+                score += 200
+                powerup.play()
+                player_size = 'bomber'
+                freeze_y = player_rect.y - 16
+                bombers.remove(bomber)      
+            else:
+                score += 100
+                powerup.play()
+                bombers.remove(bomber)
+                
     for flower in flowers:
         flower.render(display) 
         if flower.justcreated:
@@ -1399,13 +1603,22 @@ while not IsGameOver or True: # Main game loop
             goomba.render(display)
             
             for fireball in fireballs:
-                if goomba.collision_test(fireball.get_rect()):
+                if goomba.collision_test(fireball.get_rect()) and goomba.isAlive:
                     fireballs.remove(fireball)
                     kick_sound.play()
                     score += 100
                     goomba.isAlive = True
                     pygame.time.set_timer(pygame.USEREVENT+0, 500)
                     goombas_kill.append(goomba)
+                    goomba.flip = True
+            
+            for explosion in explosions:
+                if goomba.collision_test(explosion.get_rect()) and goomba.isAlive:
+                    kick_sound.play()
+                    score += 100
+                    goomba.isAlive = False
+                    pygame.time.set_timer(pygame.USEREVENT+0, 500)
+                    koopas_kill.append(koopa)
                     goomba.flip = True
         
             if goomba.collision_test(player_rect) and goomba.isAlive and not IsGameOver:
@@ -1452,6 +1665,22 @@ while not IsGameOver or True: # Main game loop
                         beingsmall = True
                         vertical_momentum = -3
                         isinvincible = True
+                
+                if player_size in ['bomber']:
+                    if (player_rect.y+16) < goomba.loc[1]:
+                        stomp_sound.play()
+                        vertical_momentum = -3
+                        score += 100
+                        goomba.isAlive = False
+                        pygame.time.set_timer(pygame.USEREVENT+0, 500)
+                        goombas_kill.append(goomba)
+                    elif goomba.isAlive and not isinvincible:
+                        powerdown.play()
+                        player_size = 'fire'
+                        beingfire = True
+                        vertical_momentum = -3
+                        isinvincible = True
+                
     
     for koopa in koopas:
         if abs(player_rect.x - koopa.loc[0]) < 160:
@@ -1499,6 +1728,16 @@ while not IsGameOver or True: # Main game loop
                     pygame.time.set_timer(pygame.USEREVENT+0, 500)
                     koopas_kill.append(koopa)
                     koopa.flip = True
+            
+            for explosion in explosions:
+                if koopa.collision_test(explosion.get_rect()):
+                    kick_sound.play()
+                    score += 100
+                    koopa.isAlive = False
+                    koopa.isstomped = True
+                    pygame.time.set_timer(pygame.USEREVENT+0, 500)
+                    koopas_kill.append(koopa)
+                    koopa.flip = True
         
             if koopa.collision_test(player_rect) and koopa.isAlive and not IsGameOver:
                 if not koopa.isstomped:
@@ -1533,6 +1772,23 @@ while not IsGameOver or True: # Main game loop
                             beingsmall = True
                             vertical_momentum = -3
                             
+                    if player_size in ['bomber']:
+                        if (player_rect.y+16) < koopa.loc[1]:
+                            stomp_sound.play()
+                            vertical_momentum = -3
+                            score += 100
+                            koopa.isAlive = True
+                            koopa.isstomped = True
+                            koopa.rect = pygame.Rect(koopa.loc[0], koopa.loc[1] + 6, 16, 16)
+                            pygame.time.set_timer(pygame.USEREVENT+0, 500)
+                            koopas_kill.append(koopa)
+                            koopa.movement[0] = 0
+                        elif koopa.isAlive:
+                            powerdown.play()
+                            player_size = 'fire'
+                            beingfire = True
+                            vertical_momentum = -3
+                    
                     if player_size in ['fire']:
                         if (player_rect.y+16) < koopa.loc[1]:
                             stomp_sound.play()
@@ -1547,8 +1803,9 @@ while not IsGameOver or True: # Main game loop
                         elif koopa.isAlive:
                             powerdown.play()
                             player_size = 'big'
-                            beingsmall = True
+                            beingvig = True
                             vertical_momentum = -3
+                    
     
     
     
@@ -1590,6 +1847,36 @@ while not IsGameOver or True: # Main game loop
                 fireball.direction = 'left'
         if fireball.loc[1] > 200:
             fireballs.remove(fireball)
+    
+    for bomb in bombs:
+        
+        bomb.render(display)
+        bomb.animate('bomb')
+        
+        bomb.move()
+        bomb.rect,collisions = move(bomb.rect,bomb.movement,tile_rects)
+        
+        
+        if collisions['bottom'] == True:
+            bomb.vertical_momentum = -3
+            explosions.append(Explosion(bomb.loc))
+            bombs.remove(bomb)
+        if collisions['top'] == True:
+            bomb.vertical_momentum = -3
+            explosions.append(Explosion(bomb.loc))
+            bombs.remove(bomb)
+        if bomb.vertical_momentum > 3:
+            bomb.vertical_momentum = 3
+        if collisions['left'] == True:
+            explosions.append(Explosion(bomb.loc))
+            bombs.remove(bomb)         
+                
+        if collisions['right'] == True:
+            explosions.append(Explosion(bomb.loc))
+            bombs.remove(bomb)
+            
+        if bomb.loc[1] > 200:
+            bombs.remove(bomb)
     
     
     
@@ -1659,20 +1946,31 @@ while not IsGameOver or True: # Main game loop
                     if player_size == 'small':
                         small_jump_sound.set_volume(1)
                         small_jump_sound.play()
-                    elif player_size == 'big':
+                    elif player_size in ['big','fire','bomber']:
                         big_jump_sound.set_volume(1)
                         big_jump_sound.play()
                         
             if event.key == K_x:
                 if player_size == 'fire':
-                    fireball_sound.play()
+                    
                     if not isFreeFalling:
                         speedMultiplier = 1.5
                     if len(fireballs) < 2:
+                        fireball_sound.play()
                         if player_flip:
                             fireballs.append(Fireball([player_rect.x - 12,player_rect.y], 'left'))
                         else:
-                            fireballs.append(Fireball([player_rect.x + 12,player_rect.y], 'right'))  
+                            fireballs.append(Fireball([player_rect.x + 12,player_rect.y], 'right'))
+                elif player_size == 'bomber':
+                    
+                    if not isFreeFalling:
+                        speedMultiplier = 1.5
+                    if len(bombs) < 2:
+                        fireball_sound.play()
+                        if player_flip:
+                            bombs.append(Bomb([player_rect.x - 12,player_rect.y], 'left'))
+                        else:
+                            bombs.append(Bomb([player_rect.x + 12,player_rect.y], 'right'))
                 else:
                     if not isFreeFalling:
                         speedMultiplier = 1.5
@@ -1683,7 +1981,7 @@ while not IsGameOver or True: # Main game loop
                     powerdown.play()
                     player_x = player_rect.x
                     player_y = player_rect.y
-                    player_rect = pygame.rect.Rect(player_x,player_y,16,16) # player collision rectangle
+                    player_rect = pygame.rect.Rect(player_x,player_y,16,16)
                     
             if event.key == K_2:
                     beingbig = True
@@ -1691,7 +1989,7 @@ while not IsGameOver or True: # Main game loop
                     powerup.play()
                     player_x = player_rect.x
                     player_y = player_rect.y
-                    player_rect = pygame.rect.Rect(player_x,player_y,16,32) # player collision rectangle
+                    player_rect = pygame.rect.Rect(player_x,player_y,16,32)
              
             if event.key == K_3:
                     beingfire = True
@@ -1699,7 +1997,15 @@ while not IsGameOver or True: # Main game loop
                     powerup.play()
                     player_x = player_rect.x
                     player_y = player_rect.y
-                    player_rect = pygame.rect.Rect(player_x,player_y,16,32) # player collision rectangle
+                    player_rect = pygame.rect.Rect(player_x,player_y,16,32)
+                    
+            if event.key == K_4:
+                    beingbomber = True
+                    player_size ='bomber'
+                    powerup.play()
+                    player_x = player_rect.x
+                    player_y = player_rect.y
+                    player_rect = pygame.rect.Rect(player_x,player_y,16,32)
            
             if event.key == K_0:
                NextLevel = True
@@ -1712,11 +2018,9 @@ while not IsGameOver or True: # Main game loop
                 speedMultiplier = 1
 
     #Debug Console
-    
-    print('\n' * 100)
-    print('Player[x,y,g,airtime,fps] :'+ str([player_rect.x,player_rect.y,vertical_momentum,air_timer,clock]))
-    print('Player[score,scrollx,scrolly]' +str([score,scrollx,scrolly]))
-    print(levels)
+    #print('\n' * 100)
+    #print('Player[x,y,g,airtime,fps] :'+ str([player_rect.x,player_rect.y,vertical_momentum,air_timer,clock]))
+    #print('Player[score,scrollx,scrolly]' +str([score,scrollx,scrolly]))
     pygame.display.update() # Update the display.
     screen.blit(pygame.transform.scale(display,WINDOW_SIZE),(0,0))
     clock.tick(60) # Cap the frame rate of the game to 60fps.
