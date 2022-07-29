@@ -7,11 +7,8 @@ __builddate__='2020/5/8'
 #2D PLATFORMER SIDE SCROLLING ENGINE
 
 '''
-ENGINE FEATURES (AS OF BUILD DATE AND VERSION):
 2D PERSPECTIVE
 PLATFORMER SIDE SCROLLING ( BOTH X & Y )
-OBJECT SYSTEM ( COINS MUSHROOM ETC )
-ENEMIES SYSTEM
 SIMPLE TILE MAP ( refer to map/readme.txt for info)
 MULTIPLE LEVELS
 '''
@@ -23,21 +20,20 @@ This is my first take on a super mario bros clone and a working 2d platformer
 engine for my future games. I will keep improving the engine and keep adding
 new features and optimizations. The code can be a bit messy and I tried to
 go a little bit towards object oriented route. This can be confusing for
-beginners so,I tried to comment each and every line of the code how it works
-and what it does. For Expeirenced verteran ones, You will find a lot
+beginners so, I tried to comment each and every line of the code how it works
+and what it does. For Experienced verteran ones, You will find a lot
 of bad programming practises and really stupid way of doing things.
 
-Currently the game manages a 60fps lock and 200fps on a i5 2.9ghz cpu
+Currently the game manages a 60fps lock and 200fps on a i5 3.6ghz cpu
 pygame doesn't use any rendering backend (openGL,directX,vulcan etc) so,
 gpu isn't used here. All the calculations are done by the cpu itself.
 
 Game doesn't use too much memory. Currently only uses 37MB (which is still
-a lot originL MARIO USED 2KB )
+a lot original one USED 2KB on NES. )
 '''
 
 import pygame,sys # pygame library and system library
 from pygame.locals import * # Import all the modules of pygame.
-import dumbmenu as dm # simple module to make a menu, cudn't make a menu so used a opensource module for that
 
 a0xe3d = 0 # jpt variable
 
@@ -51,12 +47,12 @@ screen = pygame.display.set_mode(WINDOW_SIZE,0,32) # Make the window.
 
 display = pygame.Surface((300,200)) # used as the surface for rendering, which is scaled
 
-pygame.mixer.pre_init(44100, -16,2,512) # Initialize the sound controller with 44100hz freq, 16bit stero 512k buffer.
+pygame.mixer.pre_init(44100, -16,2,512) # Initialize the sound controller with 44100hz freq, 16bit stereo 512k buffer.
 
-myfont = pygame.font.SysFont("retro", 15)
+myfont = pygame.font.SysFont("retro", 15) # initialize system fonts
 
 
-pygame.display.set_caption('[HELPx v1] [SuperMario]') # Set the window title.
+pygame.display.set_caption('SuperMarioBrothers - PyGame - UtkristKarki') # Set the window title.
 ###### PYGAME INITIALIZATION ################################
 clock = pygame.time.Clock() # Set the clock timer.
 
@@ -64,7 +60,7 @@ clock = pygame.time.Clock() # Set the clock timer.
 ########## Memory & Variable Initialization #################
 
 #Image initialization.(many are just placeholder images)
-# .convert() is used for greencast. ( white is removed)
+# .convert() is used for maintaining transparency. ( white is removed)
 
 
 player_img = pygame.image.load('player.png').convert()
@@ -450,7 +446,7 @@ class Coin_bounce():
         return coin_rect.colliderect(rect)
     
     def animate(self, coin_action):
-        print(self.frameloops)
+
         if self.frame >= len(animation_database[coin_action]):
             self.frame = 0
             self.justcreated = False
@@ -1023,13 +1019,6 @@ screen.fill(blue)
 pygame.display.update()
 pygame.key.set_repeat(500,30)
 
-    
-choose = dm.dumbmenu(screen, [
-                        'Start Game',
-                        'Quit Game'], 250,200,None,32,1.4,green,red)
-if choose == 1:
-    pygame.quit()
-    exit()
 
 loadtiles()
 
@@ -1047,8 +1036,6 @@ while not IsGameOver or True: # Main game loop
                 
         pygame.time.delay(5000)
 
-
-        print('nextlevel') 
         IsGameOver = False
         blockinput = False
 
@@ -1886,7 +1873,6 @@ while not IsGameOver or True: # Main game loop
                 blockinput = False
                 vertical_momentum = 1.2
                 player_flip = False
-                print('Level end')
                 
                 player_img = small_flag_img
                 player_rect.x = flag.loc[0] - 12

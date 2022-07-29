@@ -9,30 +9,6 @@
 !              ?  bmb?b                                                 bmb                b     bb    ?   ?   ?     b           bb      l   l           ll  l           bb?b         llllll
 !                                                                                                                                      xll   ll         lll  ll                      lllllll
 !                                                                                                                                      lll   lll       llll  lll                    llllllll
-!E@  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    W                  W W        kxx   W  W   R    kW        x x    llllW  llll  E  lllll  llll  R q   W    x  q lllllllll        F
+!E@        W W W R   W    xq      x w     x e     xx   e W W WR      W                  W W        kxx   W  W   R    kW        x x    llllW  llll  E  lllll  llll  R q   W    x  q lllllllll        F
  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  aaaaaaaaaaaaaaa   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  aaaaaaaaaaaaaaa   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

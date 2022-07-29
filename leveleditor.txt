@@ -1,4 +1,4 @@
-Level editor for helpv1 framework games [SUPERMARIO] in this case.
+Level editor for super mario brothers pygame clone.
 
 Simply open leveleditor.py and run it. REMEMBER PYGAME IS STILL REQUIRED.
 
@@ -24,4 +24,4 @@ CHEATS!
 4 - become bomber
 0 - goto next level
 
-To play levels simpl
+To play levels simply run mario.py
