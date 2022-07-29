@@ -1,5 +1,5 @@
 version= 2020/5/11
-author = Utkrist Karki, Realskull
+author = Utkrist Karki, Fever
 framework name = [HELPv1] 
 
 =====CHANGES=====
@@ -16,8 +16,6 @@ No copyright on the framework. Feel free to modify and change according to your 
 
 *no bugs yet (i hope)
 
-only 1 level for now
-THAT 1 LEVEL IS THE ORIGNAL LEVEL
 
 ==================================
 CONTROLS
@@ -25,5 +23,3 @@ up arrow - jump
 w- left move
 d - right move
 x - throw fireball
-
-rip my english
