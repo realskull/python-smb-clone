@@ -12,6 +12,8 @@ state = fully playable first level
 
 No copyright on the framework. Feel free to modify and change according to your needs. If you do keep the code same, don't mind giving me some credits.
 
+Please remember that all the art and music (even the level design) and the design is copyrighted by Nintendo.
+
 =================================
 
 *no bugs yet (i hope)
